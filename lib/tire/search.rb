@@ -4,7 +4,7 @@ module Tire
 
     class Search
 
-      attr_reader :indices, :types, :query, :facets, :filters, :options, :explain, :script_fields
+      attr_reader :indices, :types, :query, :facets, :filters, :options, :explain, :script_fields, :aggregations
 
       def initialize(indices=nil, options={}, &block)
         if indices.is_a?(Hash)
@@ -66,6 +66,12 @@ module Tire
       def facet(name, options={}, &block)
         @facets ||= {}
         @facets.update Facet.new(name, options, &block).to_hash
+        self
+      end
+
+      def aggregation(name, options={}, &block)
+        @aggregations ||= {}
+        @aggregations.update Aggregation.new(name, options, &block).to_hash
         self
       end
 
@@ -176,6 +182,7 @@ module Tire
           request.update( { :explain => @explain } )         if @explain
           request.update( { :min_score => @min_score } )     if @min_score
           request.update( { :track_scores => @track_scores } ) if @track_scores
+          request.update( { :aggs => @aggregations.to_hash } ) if @aggregations
           request
         end
       end
